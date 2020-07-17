@@ -3,6 +3,7 @@ import axios from "axios";
 import { createPopper } from "@popperjs/core";
 var currentTemplateNumber;
 var currentImageInSlideShow;
+var currentTemplateIdentifier;
 export const dataLoader = async (groupId) => {
   try {
     const config = {
@@ -36,7 +37,34 @@ export const dataLoader = async (groupId) => {
 
 export const showTemplate = async (document, templates, sliceIndex) => {
   currentTemplateNumber = -1;
-  nextTemplate(document, templates.slice(0, sliceIndex));
+  if (templates.length > 0) {
+    window.addEventListener("popstate", function (event) {
+      if (templates !== [] && currentTemplateNumber !== -1) {
+        console.log(templates);
+        if (
+          document.getElementsByClassName(currentTemplateIdentifier).length > 0
+        ) {
+          let previousTarget = document.getElementsByClassName(
+            currentTemplateIdentifier
+          )[0];
+          previousTarget.classList.remove("Template-Active-Element");
+        }
+
+        if (document.getElementById("Overlay-" + currentTemplateIdentifier)) {
+          document
+            .getElementById("Overlay-" + currentTemplateIdentifier)
+            .remove();
+        }
+        if (document.getElementById("Template-" + currentTemplateIdentifier)) {
+          document
+            .getElementById("Template-" + currentTemplateIdentifier)
+            .remove();
+        }
+        currentTemplateNumber = -1;
+      }
+    });
+    nextTemplate(document, templates.slice(0, sliceIndex));
+  }
 };
 
 export const nextTemplate = async (document, templates) => {
@@ -66,6 +94,10 @@ export const nextTemplate = async (document, templates) => {
         )
         .remove();
     }
+    if (currentTemplateNumber === templates.length - 1) {
+      currentTemplateNumber = -1;
+      return;
+    }
   }
 
   currentTemplateNumber = currentTemplateNumber + 1;
@@ -80,6 +112,7 @@ export const nextTemplate = async (document, templates) => {
     var newTemplateDiv = document.createElement("div");
     newTemplateDiv.id =
       "Template-" + templates[currentTemplateNumber].identifier;
+    currentTemplateIdentifier = templates[currentTemplateNumber].identifier;
 
     newTemplateDiv.innerHTML = templates[currentTemplateNumber].DOMString;
     newTemplateDiv.style.padding = "-5px";
@@ -254,6 +287,8 @@ export const previousTemplate = async (document, templates) => {
 
     var newTemplateDiv = document.createElement("div");
     newTemplateDiv.id =
+      "Template-" + templates[currentTemplateNumber].identifier;
+    currentTemplateIdentifier =
       "Template-" + templates[currentTemplateNumber].identifier;
 
     newTemplateDiv.innerHTML = templates[currentTemplateNumber].DOMString;
